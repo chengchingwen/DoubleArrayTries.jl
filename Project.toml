@@ -1,0 +1,13 @@
+name = "DoubleArrayTries"
+uuid = "abbaa0e5-f788-499c-92af-c35ff4258c82"
+authors = ["chengchingwen <adgjl5645@hotmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
