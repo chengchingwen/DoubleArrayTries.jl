@@ -13,8 +13,8 @@ function match(tv::TVector, key::AbstractVector{UInt8}, tpos)
     if bin_mode(tv)
         @inbounds while true
             key[kpos] != tv.chars[tpos] && return false
-            kpos += 1
             tv.terms[tpos] && return kpos == len
+            kpos += 1
             tpos += 1
             kpos <= len || break
         end
