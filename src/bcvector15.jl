@@ -26,6 +26,7 @@ function BCVector(bc_units, leaves)
 
         if fld(x, block_size_l1) == 0
             push!(ints_l1, (x << 1) % UInt16)
+            return nothing
         else
             i = length(ints_l2) - ranks[1][end]
             push!(ints_l1, (0x1 | (i << 1)) % UInt16)
@@ -35,6 +36,7 @@ function BCVector(bc_units, leaves)
 
         if fld(x, block_size_l2) == 0
             push!(ints_l2, (x << 1) % UInt32)
+            return nothing
         else
             i = length(ints_l3) - ranks[2][end]
             push!(ints_l2, (0x1 | (i << 1)) % UInt32)
