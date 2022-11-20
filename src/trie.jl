@@ -52,7 +52,7 @@ function decode(dat::DoubleArrayTrie, i)
     (0 < i <= dat.num_keys) || return nothing
     decoded = Vector{UInt8}(undef, dat.table.max_length) |> empty!
     decode!(dat, decoded, i)
-    return StringView(decoded)
+    return String(decoded)
 end
 
 function decode!(dat::DoubleArrayTrie, decoded::AbstractVector{UInt8}, i)
