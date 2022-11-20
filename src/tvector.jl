@@ -31,25 +31,27 @@ function match(tv::TVector, key::AbstractVector{UInt8}, tpos)
     end
 end
 
-function decode!(tv::TVector, decoded::AbstractVector{UInt8}, tpos)
+function decode(tv::TVector, tpos)
+    isone(tpos) && return @view tv.chars[1:0]
+    tpos_start = tpos
+    len = length(tv.chars)
     if bin_mode(tv)
-        if tpos != 1
-            @inbounds while true
-                push!(decoded, tv.chars[tpos])
-                tv.terms[tpos] && break
-                tpos += 1
-            end
-        end
-        return decoded
-    else
-        @inbounds while true
-            c = tv.chars[tpos]
-            iszero(c) && break
-            push!(decoded, c)
+        @inbounds while tpos <= len && !tv.terms[tpos]
             tpos += 1
         end
-        return decoded
+        return @view tv.chars[tpos_start:min(tpos, len)]
+    else
+        @inbounds while tpos <= len && !iszero(tv.chars[tpos])
+            tpos += 1
+        end
+        return @view tv.chars[tpos_start:min(tpos-1, len)]
     end
+end
+
+function decode!(tv::TVector, decoded::AbstractVector{UInt8}, tpos)
+    tail = decode(tv, tpos)
+    append!(decoded, tail)
+    return decoded
 end
 
 function prefix_match(tv::TVector, key::AbstractVector{UInt8}, tpos)
