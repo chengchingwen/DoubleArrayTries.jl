@@ -12,5 +12,7 @@ include("bcvector15.jl")
 include("codetable.jl")
 include("trie.jl")
 include("prefix.jl")
+include("predictive.jl")
+include("dict.jl")
 
 end
