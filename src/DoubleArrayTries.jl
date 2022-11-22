@@ -3,6 +3,9 @@ module DoubleArrayTries
 using StringViews
 using OffsetArrays
 
+export DoubleArrayTrie, lookup, decode,
+    common_prefix_search, CommonPrefixSearch, predictive_search, PredictiveSearch
+
 include("build.jl")
 include("succinct.jl")
 include("bvector.jl")
