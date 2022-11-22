@@ -41,7 +41,7 @@ function Base.iterate(itr::PredictiveSearch, state)
     dat = itr.dat
 
     while !isempty(state.stack)
-        (; label, kpos, npos) = pop!(state.stack)
+        label, kpos, npos = pop!(state.stack)
         npos₀ = UInt64(npos - 1)
         if kpos > 0
             resize!(state.decoded, kpos)
@@ -114,7 +114,7 @@ function Base.iterate(itr::PredictiveIDSearch, state)
     dat = itr.dat
 
     while !isempty(state.stack)
-        (; label, kpos, npos) = pop!(state.stack)
+        label, kpos, npos = pop!(state.stack)
         npos₀ = UInt64(npos - 1)
         if isleaf(dat.bcvec, npos)
             id = npos_to_id(dat, npos)
