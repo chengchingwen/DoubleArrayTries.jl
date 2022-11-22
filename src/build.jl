@@ -126,7 +126,7 @@ end
 function close_block!(m_units, m_useds, m_heads, m_l1_bits, m_l1_size, bpos)
     beg_npos = bpos << 8
     end_npos = beg_npos + 256
-    for npos = beg_npos:(end_npos-1)
+    for npos in beg_npos:(end_npos-1)
         if !m_useds[npos]
             use_unit!(m_units, m_useds, m_heads, m_l1_bits, npos)
             m_useds[npos] = false
@@ -143,8 +143,8 @@ end
 
 function arrange!(m_units, m_l1_bits, m_l1_size, m_useds, m_terms, m_heads, m_leaves, m_edges, m_table, m_suffixes,
                   m_keys, begi, endi, kpos, npos)
-    key = m_keys[begi + 1]
-    if ncodeunits(key) == kpos
+    key = codeunits(m_keys[begi])
+    if length(key) == kpos
         m_terms[npos] = true
         begi += 1
         if begi == endi
@@ -153,18 +153,18 @@ function arrange!(m_units, m_l1_bits, m_l1_size, m_useds, m_terms, m_heads, m_le
             return nothing
         end
     elseif begi + 1 == endi
-        @assert ncodeunits(key) > kpos "The input keys are not unique"
+        @assert length(key) > kpos "The input keys are not unique"
         m_terms[npos] = true
         m_leaves[npos] = true
-        set_suffix!(m_suffixes, @view(codeunits(key)[(1 + kpos):end]), npos)
+        set_suffix!(m_suffixes, @view(key[(kpos + 1):end]), npos)
         return nothing
     end
-    key = m_keys[begi + 1]
+    key = codeunits(m_keys[begi])
 
     empty!(m_edges)
-    c = codeunit(key, kpos + 1)
+    c = key[kpos + 1]
     for i = (begi + 1):(endi - 1)
-        next_c = codeunit(m_keys[i + 1], kpos + 1)
+        next_c = codeunit(m_keys[i], kpos + 1)
         if c != next_c
             @assert next_c >= c "The input keys are not in lexicographical order."
             push!(m_edges, c)
@@ -184,9 +184,9 @@ function arrange!(m_units, m_l1_bits, m_l1_size, m_useds, m_terms, m_heads, m_le
     end
 
     i = begi
-    c = codeunit(key, kpos + 1)
-    for j = (begi + 1):( endi - 1)
-        next_c = codeunit(m_keys[j + 1], kpos + 1)
+    c = key[kpos + 1]
+    for j = (begi + 1):(endi - 1)
+        next_c = codeunit(m_keys[j], kpos + 1)
         if c != next_c
             arrange!(m_units, m_l1_bits, m_l1_size, m_useds, m_terms, m_heads, m_leaves, m_edges, m_table, m_suffixes, m_keys,
                      i, j, kpos + 1, base ⊻ m_table[c])
@@ -212,7 +212,9 @@ end
 based₀(x) = OffsetArrays.Origin(0)(based₁(x))
 based₁(x) = OffsetArrays.no_offset_view(x)
 
-function buildXCDAT(m_keys; l1_bits = 8, bin_mode = true)
+function buildXCDAT(_m_keys; l1_bits = 8, bin_mode = true)
+    @assert bin_mode || all(key->all(!iszero, codeunits(key)), _m_keys) "`bin_mode = true` must be set if '\0' is included in a string key"
+    m_keys = based₀(_m_keys)
     m_l1_bits = min(l1_bits, 8)
     m_l1_size = UInt(1) << m_l1_bits
 
@@ -264,9 +266,11 @@ function buildXCDAT(m_keys; l1_bits = 8, bin_mode = true)
     )
 end
 
+_rget(str, i) = str[length(str) - i + 1]
+
 function complete!(m_suffixes, m_units, bin_mode, func)
     m_terms = based₀(BitVector())
-    sort!(m_suffixes)
+    sort!(m_suffixes; by=x->reverse(x.str))
     m_chars = based₀(UInt8[0])
     if bin_mode
         push!(m_terms, false)
@@ -281,7 +285,7 @@ function complete!(m_suffixes, m_units, bin_mode, func)
 
         match = 1
         prev_suf_size = isnothing(prev_suffix) ? 0 : length(prev_suffix.str)
-        while match <= suf_size && match <= prev_suf_size && prev_suffix.str[match] == curr_suffix.str[match]
+        while match <= min(suf_size, prev_suf_size) && _rget(prev_suffix.str, match) == _rget(curr_suffix.str, match)
             match += 1
         end
 
