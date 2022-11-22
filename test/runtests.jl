@@ -147,7 +147,11 @@ const DAT = DoubleArrayTries
 end
 
 function random_test(seed, domain, len_domain, n)
-    rng = Random.Xoshiro(seed)
+    if VERSION < v"1.8"
+        rng = Random.MersenneTwister(seed)
+    else
+        rng = Random.Xoshiro(seed)
+    end
     raw_keys = unique!([randstring(rng, domain, rand(rng, len_domain)) for i = 1:n])
     for bin_mode in (true, false)
         bin_mode || all(key->all(!iszero, codeunits(key)), raw_keys) || continue
