@@ -59,10 +59,13 @@ function select(bv::BVector, n)
     return 64word_offset + select_in_word(chunk, UInt64(n) - curr_rank)
 end
 
+midpoint(lo::T, hi::T) where T<:Integer = lo + ((hi - lo) >>> 0x01)
+midpoint(lo::Integer, hi::Integer) = midpoint(promote(lo, hi)...)
+
 function select_for_block(bv, n)
     a, b = select_with_hint(bv.select_hints, n)
     @inbounds while b - a > 1
-        lb = Base.midpoint(a, b)
+        lb = midpoint(a, b)
         if bv.rank_hints[2lb + 1] <= n
             a = lb
         else
