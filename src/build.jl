@@ -1,4 +1,4 @@
-const taboo_npos = 1
+const taboo_npos = UInt64(1)
 const free_blocks = 16
 
 BASE₀(i) = UInt64(i) << 1
@@ -96,7 +96,7 @@ function xcheck(m_units, m_l1_bits, m_useds, m_heads, m_edges, m_table, lpos)
 end
 
 function expand!(m_units, m_useds, m_heads, m_leaves, m_terms, m_l1_bits, m_l1_size)
-    old_size = size(m_units, 2)
+    old_size = length(m_units) >>> 1
     new_size = old_size + 256
 
     for npos = old_size:(new_size - 1)
