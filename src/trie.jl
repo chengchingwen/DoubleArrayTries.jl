@@ -6,6 +6,7 @@ struct DoubleArrayTrie
     tvec::TVector
 end
 
+DoubleArrayTrie(m_keys::AbstractVector{<:AbstractString}; bin_mode = true) = DoubleArrayTrie(collect(m_keys); bin_mode)
 function DoubleArrayTrie(m_keys::Vector{<:AbstractString}; bin_mode = true)
     !issorted(m_keys) && sort!(m_keys)
     !allunique(m_keys) && unique!(m_keys)
@@ -50,7 +51,7 @@ end
 
 function decode(dat::DoubleArrayTrie, i)
     (0 < i <= dat.num_keys) || return nothing
-    decoded = Vector{UInt8}(undef, dat.table.max_length) |> empty!
+    decoded = Vector{UInt8}(undef, max_length(dat)) |> empty!
     decode!(dat, decoded, i)
     return String(decoded)
 end
@@ -71,4 +72,12 @@ function decode!(dat::DoubleArrayTrie, decoded::AbstractVector{UInt8}, i)
         decode!(dat.tvec, decoded, tpos₀ + 1)
     end
     return decoded
+end
+
+Base.length(dat::DoubleArrayTrie) = num_keys(dat)
+function Base.iterate(dat::DoubleArrayTrie, state = nothing)
+    it = isnothing(state) ? iterate(PredictiveSearch(dat, "")) : iterate(PredictiveSearch(dat, ""), state)
+    isnothing(it) && return nothing
+    (id, decoded), nstate = it
+    return decoded => id, nstate
 end

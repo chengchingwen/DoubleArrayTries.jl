@@ -25,13 +25,11 @@ function Base.get(d::StringDict, k::AbstractString, v)
 end
 
 Base.length(d::StringDict) = length(d.values)
-Base.iterate(d::StringDict) = _iterate(d, iterate(PredictiveSearch(d.trie, "")))
-Base.iterate(d::StringDict, state) = _iterate(d, iterate(PredictiveSearch(d.trie, ""), state))
 
-_iterate(d, ::Nothing) = nothing
-function _iterate(d, states)
-    id, key = states[1]
-    state = states[2]
+function Base.iterate(d::StringDict, state = nothing)
+    it = iterate(d.trie, state)
+    isnothing(it) && return nothing
+    (key, id), nstate = it
     val = @inbounds d.values[d.indices[id]]
-    return key=>val, state
+    return key => id, nstate
 end
