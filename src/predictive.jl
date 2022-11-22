@@ -8,14 +8,18 @@ Base.IteratorSize(::PredictiveSearch) = Base.SizeUnknown()
 
 function Base.iterate(itr::PredictiveSearch)
     dat = itr.dat
-    decoded = Vector{UInt8}(undef, itr.dat.table.max_length) |> empty!
+    decoded = Vector{UInt8}(undef, max_length(itr.dat.table)) |> empty!
     stack = @NamedTuple{label::UInt8, kpos::Int, npos::Int}[]
     npos = 1
     for kpos = 1:length(itr.key)
         if isleaf(dat.bcvec, npos)
-            tpos = Int(LINK₀(npos) + 1)
+            npos₀ = UInt64(npos - 1)
+            tpos = Int(LINK₀(dat.bcvec, npos₀)) + 1
             isone(tpos) && return nothing
-            prefix_match(dat.tvec, @view(itr.key[kpos:end]), tpos) == 0 && return nothing
+            suffix = @view itr.key[kpos:end]
+            matched = prefix_match(dat.tvec, suffix, tpos)
+            isnothing(matched) && return nothing
+            matched != length(suffix) && return nothing
             id = npos_to_id(dat, npos)
             decode!(dat.tvec, decoded, tpos)
             return (id, String(StringView(decoded))), (; decoded, stack, isend = true)
@@ -83,9 +87,13 @@ function Base.iterate(itr::PredictiveIDSearch)
     label = 0x0
     for kpos = 1:length(itr.key)
         if isleaf(dat.bcvec, npos)
-            tpos = Int(LINK₀(npos) + 1)
+            npos₀ = UInt64(npos - 1)
+            tpos = Int(LINK₀(dat.bcvec, npos₀)) + 1
             isone(tpos) && return nothing
-            prefix_match(dat.tvec, @view(itr.key[kpos:end]), tpos) == 0 && return nothing
+            suffix = @view itr.key[kpos:end]
+            matched = prefix_match(dat.tvec, suffix, tpos)
+            isnothing(matched) && return nothing
+            matched != length(suffix) && return nothing
             id = npos_to_id(dat, npos)
             return id, (; stack, isend = true)
         end
