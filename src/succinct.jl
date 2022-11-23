@@ -49,7 +49,7 @@ function byte_counts(x::UInt64)
     return x;
 end
 
-pdep_select_in_word(x, k) = trailing_zeros(pdep(UInt64(1) << UInt64(k), UInt64(x)))
+pdep_select_in_word(x, k) = UInt64(trailing_zeros(pdep(UInt64(1) << UInt64(k), UInt64(x))))
 
 function _pdep(temp::T, mask::T) where T <: Union{UInt32, UInt64}
     n = count_ones(mask)
