@@ -5,6 +5,16 @@ using Random
 const DAT = DoubleArrayTries
 
 @testset "DoubleArrayTries.jl" begin
+    @testset "pdep" begin
+        for _ in 1:100000
+            x64 = rand(UInt64)
+            y64 = rand(UInt64)
+            x32 = rand(UInt32)
+            y32=  rand(UInt32)
+            @test DAT.pdep(x64, y64) == DAT._pdep(x64, y64)
+            @test DAT.pdep(x32, y32) == DAT._pdep(x32, y32)
+        end
+    end
     @testset "bcvector" begin
         num_units = 20000
         for max_size in (UInt64(10000), typemax(UInt64))
