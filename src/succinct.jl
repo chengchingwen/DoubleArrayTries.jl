@@ -9,9 +9,13 @@ function uleq_step_9(x::UInt64, y::UInt64)
 end
 
 function has_bmi2()
-    CPUInfo = zeros(Int32, 4)
-    ccall(:jl_cpuidex, Cvoid, (Ptr{Cint}, Cint, Cint), CPUInfo, 7, 0)
-    CPUInfo[2] & 0x100 != 0
+    try
+        CPUInfo = zeros(Int32, 4)
+        ccall(:jl_cpuidex, Cvoid, (Ptr{Cint}, Cint, Cint), CPUInfo, 7, 0)
+        return CPUInfo[2] & 0x100 != 0
+    catch
+        return false
+    end
 end
 
 @static if has_bmi2()
