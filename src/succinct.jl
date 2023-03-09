@@ -1,3 +1,5 @@
+using Preferences
+
 const ones_step_4 = 0x1111111111111111
 const ones_step_8 = 0x0101010101010101
 const ones_step_9 = 0x0040201008040201 # 1 << 0 | 1 << 9 | 1 << 18 | 1 << 27 | 1 << 36 | 1 << 45 | 1 << 54
@@ -7,6 +9,20 @@ const msbs_step_9 = ones_step_9 << 8
 function uleq_step_9(x::UInt64, y::UInt64)
     return (((((y | msbs_step_9) - (x & ~msbs_step_9)) | (x ⊻ y)) ⊻ (x & ~y)) & msbs_step_9) >> 8
 end
+
+const use_pdep = @load_preference("use_pdep", true)
+
+function set_native_pdep_support(b::Bool)
+    @set_preferences!("use_pdep" => b)
+    if has_bmi2()
+        cond = b ? "enable" : "disable"
+        @info "$cond native pdep instrunction; restart your Julia session for this change to take effect!"
+    else
+        @info "CPU doesn't support native pdep instrunction; nothing changed."
+    end
+end
+
+use_pdep_inst() = use_pdep && has_bmi2()
 
 function has_bmi2()
     try
@@ -18,7 +34,7 @@ function has_bmi2()
     end
 end
 
-@static if has_bmi2()
+@static if use_pdep_inst()
     select_in_word(x, k) = pdep_select_in_word(x, k)
     pdep(x::UInt32, y::UInt32) = ccall("llvm.x86.bmi.pdep.32", llvmcall, UInt32, (UInt32, UInt32), x, y)
     pdep(x::UInt64, y::UInt64) = ccall("llvm.x86.bmi.pdep.64", llvmcall, UInt64, (UInt64, UInt64), x, y)
