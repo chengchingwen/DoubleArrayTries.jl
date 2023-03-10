@@ -1,3 +1,9 @@
+"""
+    PredictiveSearch(dat::DoubleArrayTrie, key::AbstractString)
+
+Return a iterable object that iterate through all string in the trie that has prefix of `prefix`. Each element is
+ be a tuple of id and the string (`Tuple{Int, String}`).
+"""
 struct PredictiveSearch{T <: AbstractVector{UInt8}}
     dat::DoubleArrayTrie
     key::T
@@ -72,6 +78,12 @@ end
 
 predictive_search(dat::DoubleArrayTrie, key) = collect(Tuple{Int, String}, PredictiveSearch(dat, key))
 
+"""
+    PredictiveIDSearch(dat::DoubleArrayTrie, key::AbstractString)
+
+Similar to [`PredictiveSearch`](@ref), but only return the id (`Int`). This could be slightly faster if the
+ string is not needed
+"""
 struct PredictiveIDSearch{T <: AbstractVector{UInt8}}
     dat::DoubleArrayTrie
     key::T

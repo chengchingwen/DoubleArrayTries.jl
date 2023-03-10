@@ -4,6 +4,11 @@ struct StringDict{V} <: AbstractDict{String, V}
     values::Vector{V}
 end
 
+"""
+    StringDict(list::AbstractVector{<:Pair{<:AbstractString, V}}) where V
+
+A simple string dictionary built with [`DoubleArrayTrie`](@ref).
+"""
 function StringDict(list::AbstractVector{<:Pair{<:AbstractString, V}}) where V
     perm = sortperm(list; by = first)
     dict_keys = map(i->first(list[i]), perm)

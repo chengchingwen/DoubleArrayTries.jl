@@ -6,6 +6,12 @@ struct DoubleArrayTrie
     tvec::TVector
 end
 
+"""
+    DoubleArrayTrie(keys::AbstractVector{<:AbstractString}; bin_mode = true)
+
+Accept a list of strings and build the double array trie. If `keys` is a `Vector`, it will be modified by `sort!` and
+ `unique!`. Set `bin_mode = true` allow `'\0'` as a character, this is needed for non-ascii strings.
+"""
 DoubleArrayTrie(m_keys::AbstractVector{<:AbstractString}; bin_mode = true) = DoubleArrayTrie(collect(m_keys); bin_mode)
 function DoubleArrayTrie(m_keys::Vector{<:AbstractString}; bin_mode = true)
     !issorted(m_keys) && sort!(m_keys)
@@ -31,6 +37,12 @@ tail_length(dat::DoubleArrayTrie) = length(dat.tvec.chars)
 npos_to_id(dat::DoubleArrayTrie, npos) = Int(rank(dat.terms, npos - 1)) + 1
 id_to_npos(dat::DoubleArrayTrie, npos) = Int(select(dat.terms, npos - 1)) + 1
 
+"""
+    lookup(dat::DoubleArrayTrie, key::S) where S <: Union{AbstractString, AbstractVector{UInt8}}
+
+Lookup the `key` in the trie, return a unique id where `0 <= id <= length(dat)`. If the id is 0, it means the `key` does
+ not present in the trie.
+"""
 lookup(dat::DoubleArrayTrie, key::AbstractString) = lookup(dat, codeunits(key))
 function lookup(dat::DoubleArrayTrie, key::AbstractVector{UInt8})
     len = length(key)
@@ -49,6 +61,12 @@ function lookup(dat::DoubleArrayTrie, key::AbstractVector{UInt8})
     return npos_to_id(dat, npos)
 end
 
+"""
+    decode(dat::DoubleArrayTrie, i::Int)
+
+Take an id `i` and return a corresponding string in the trie. If `i <= 0 || i > length(dat)`, it will always
+ return `nothing`.
+"""
 function decode(dat::DoubleArrayTrie, i)
     (0 < i <= dat.num_keys) || return nothing
     decoded = Vector{UInt8}(undef, max_length(dat)) |> empty!
