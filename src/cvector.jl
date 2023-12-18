@@ -32,7 +32,7 @@ end
 Base.length(cv::CVector) = cv.size
 Base.size(cv::CVector) = (length(cv),)
 
-Base.checkbounds(::Type{Bool}, cv::CVector, i) = i <= length(cv)
+Base.checkbounds(::Type{Bool}, cv::CVector, i) = 0 < i <= length(cv)
 
 @inline function Base.getindex(cv::CVector, i)
     @boundscheck checkbounds(cv, i)
